@@ -73,18 +73,26 @@ istream& operator>> (istream& is, Date& date)
 class Budget
 {
 	vector<double> dates_incomes = { 0.0 };
+	vector<double> dates_spendings = { 0.0 };
 	Date default_date = Date(2000, 1, 1);
 public:
 	double ComputeIncome(const Date date_from, const Date date_to) const
 	{
 		int days1 = default_date.getDifference(date_from);
 		int days2 = default_date.getDifference(date_to);
-		if (days1 > (dates_incomes.size() - 1)) return 0;
-		else
+	    int end_incomes = min(days2, (int)(dates_incomes.size() - 1));
+		int end_spendings = min(days2, (int)(dates_spendings.size() - 1));
+		double overall_spendings = 0.0;
+		if (days1 <= (dates_spendings.size() - 1))
 		{
-			int end = min(days2, (int)(dates_incomes.size() - 1));
-			return accumulate(dates_incomes.begin() + days1, dates_incomes.begin() + end + 1, 0.0);
+			overall_spendings = accumulate(dates_spendings.begin() + days1, dates_spendings.begin() + end_spendings + 1, overall_spendings);
 		}
+		double overall_incomes = 0.0;
+		if (days1 <= (dates_incomes.size() - 1))
+		{
+			overall_incomes = accumulate(dates_incomes.begin() + days1, dates_incomes.begin() + end_incomes + 1, overall_incomes);
+		}
+		return overall_incomes - overall_spendings;
 	}
 
 	void Earn(const Date date_from, const Date date_to, int income)
@@ -99,13 +107,25 @@ public:
 		}
 	}
 
-	void PayTax(const Date date_from, const Date date_to)
+	void PayTax(const Date date_from, const Date date_to, double percentage)
 	{
 		int date1 = default_date.getDifference(date_from);
 		int date2 = default_date.getDifference(date_to);
 		for (int i = date1; (i <= date2 && i < dates_incomes.size()); ++i)
 		{
-			dates_incomes[i] *= 0.87;
+			dates_incomes[i] *= (1 - 0.01 * percentage);
+		}
+	}
+
+	void Spend(const Date date_from, const Date date_to, double spendings)
+	{
+		long int date1 = default_date.getDifference(date_from);
+		long int date2 = default_date.getDifference(date_to);
+		if (date2 > (dates_spendings.size() - 1)) dates_spendings.resize(date2 + 1);
+		double spendings_by_day = spendings / ((double)(date2 - date1 + 1));
+		for (int i = date1; i <= date2; ++i)
+		{
+			dates_spendings[i] += spendings_by_day;
 		}
 	}
 };
@@ -133,7 +153,15 @@ int main()
 		}
 		if (quiery == "PayTax")
 		{
-			budget.PayTax(date_from, date_to);
+			double percentage;
+			cin >> percentage;
+			budget.PayTax(date_from, date_to, percentage);
+		}
+		if (quiery == "Spend")
+		{
+			double to_spend;
+			cin >> to_spend;
+			budget.Spend(date_from, date_to, to_spend);
 		}
 	}
 	return 0;
