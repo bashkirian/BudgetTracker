@@ -28,7 +28,7 @@ class Date
 
 	int countDays() const
 	{
-		long int n = this->year * 365 + this->day;
+		int n = this->year * 365 + this->day;
 
 		for (int i = 0; i < this->month - 1; i++)
 			n += monthDays[i];
@@ -52,8 +52,8 @@ public:
 
 	int getDifference(Date dt2) const
 	{
-		long int n1 = this->countDays();
-		long int n2 = dt2.countDays();
+		int n1 = this->countDays();
+		int n2 = dt2.countDays();
 		return (n2 - n1);
 	}
 };
@@ -72,19 +72,18 @@ istream& operator>> (istream& is, Date& date)
 
 class Budget
 {
-	vector<double> dates_incomes = { 0 };
+	vector<double> dates_incomes = { 0.0 };
 	Date default_date = Date(2000, 1, 1);
 public:
 	double ComputeIncome(const Date date_from, const Date date_to) const
 	{
-		long int days1 = default_date.getDifference(date_from);
-		long int days2 = default_date.getDifference(date_to);
+		int days1 = default_date.getDifference(date_from);
+		int days2 = default_date.getDifference(date_to);
 		if (days1 > (dates_incomes.size() - 1)) return 0;
 		else
 		{
-			double sum = 0;
-			long int end = min(days2, (long int)dates_incomes.size() - 1);
-			return accumulate(dates_incomes.begin() + days1, dates_incomes.begin() + end + 1, sum);
+			int end = min(days2, (int)(dates_incomes.size() - 1));
+			return accumulate(dates_incomes.begin() + days1, dates_incomes.begin() + end + 1, 0.0);
 		}
 	}
 
@@ -93,7 +92,7 @@ public:
 		long int date1 = default_date.getDifference(date_from);
 		long int date2 = default_date.getDifference(date_to);
 		if (date2 > (dates_incomes.size() - 1)) dates_incomes.resize(date2 + 1);
-		double income_by_day = income / (date2 - date1 + 1);
+		double income_by_day = income / ((double)(date2 - date1 + 1));
 		for (int i = date1; i <= date2; ++i)
 		{
 			dates_incomes[i] += income_by_day;
@@ -117,7 +116,6 @@ int main()
 	string quiery;
 	Budget budget;
 	Date date_from, date_to;
-	cout.precision(25);
 	for (int i = 0; i < n; ++i)
 	{
 		cin >> quiery;
@@ -131,7 +129,7 @@ int main()
 		}
 		if (quiery == "ComputeIncome")
 		{
-			cout << budget.ComputeIncome(date_from, date_to) << endl;
+			cout << setprecision(25) << fixed << budget.ComputeIncome(date_from, date_to) << endl;
 		}
 		if (quiery == "PayTax")
 		{
